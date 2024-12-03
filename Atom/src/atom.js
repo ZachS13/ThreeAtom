@@ -1,5 +1,14 @@
 // import * as THREE from 'three';
+import assert from 'assert';
 import * as THREE from '../node_modules/three/build/three.module.js';
+const PT = require('./src/data.json');
+
+const numbers = PT.reduce(function (obj, element) {
+    obj[element.atomicNumber] = element;
+    return obj;
+}, {});
+
+console.log(numbers[8]);
 
 const GREEN = 0x008000,           // Hex code for the color green.
       LIGHT_BLUE = 0xADD8E6,      // Hex code for the color light blue.
@@ -191,6 +200,11 @@ scene.add(atom);
 function animate() {
     requestAnimationFrame(animate);
 
+    //animate the nucleus to spin
+    const nucleus = atom.children[0];
+    nucleus.rotation.x += 0.025;
+    nucleus.rotation.y += 0.025;
+
     // Animate electrons
     const orbitingElectrons = atom.children[1];
     orbitingElectrons.children.forEach(electron => {
@@ -212,11 +226,6 @@ function animate() {
         // Update the electron's position
         electron.position.copy(tiltedPosition);
     });
-
-    //animate the nucleus to spin
-    const nucleus = atom.children[0];
-    nucleus.rotation.x += 0.025;
-    nucleus.rotation.y += 0.025;
 
     renderer.render(scene, camera);
 }
