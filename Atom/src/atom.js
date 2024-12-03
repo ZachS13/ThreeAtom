@@ -1,7 +1,6 @@
 // import * as THREE from 'three';
-import assert from 'assert';
 import * as THREE from '../node_modules/three/build/three.module.js';
-const PT = require('./src/data.json');
+// const PT = require('./src/data.json');
 
 const numbers = PT.reduce(function (obj, element) {
     obj[element.atomicNumber] = element;
