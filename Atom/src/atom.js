@@ -1,117 +1,74 @@
-/**
- * This file creates a rendering of an atom with orbiting electrons. We will also use the
- * periodic table library to help get the elements from the table. We will make a table containing
- * every element.
- */
-
 // import * as THREE from 'three';
 import * as THREE from '../node_modules/three/build/three.module.js';
-import * as PT from 'periodic-table';
 
-function buildPeriodicTable() {
-
-}
-
+const GREEN = 0x008000,           // Hex code for the color green.
+      LIGHT_BLUE = 0xADD8E6,      // Hex code for the color light blue.
+      RED = 0xFF0000;             // Hex code for the color red.
 
 /**
- * Takes the selected element and with it's atomic number, we're going to display that specific atom.
- * @param { Integer } atomicNumber - Atomic Number of the element.
- * @returns { THREE.Group } - Calls and returns createAtom which returs the THREE.Group.
+ * Creates the nucleus of the atom with protons (red) and neutrons (blue).
+ * @param {Integer} protons - Number of protons in the nucleus
+ * @param {Integer} neutrons - Number of neutrons in the nucleus
+ * @returns {THREE.Group} A group containing the nucleus particles
  */
-function selectElement( atomicNumber ) {
-    const atom = PT.numbers[atomicNumber],
-          parts = numberOfProtonsNeutronsElectrons(atom);
-    return createAtom(parts.protons, parts.neutrons, parts.electrons);
-}
+function createNucleus(protons, neutrons) {
+    const nucleusGroup        = new THREE.Group(),                                                // Group holding the nucleus.
+          numParticles        = protons + neutrons,                                               // Number of spheres we need to make.
+          nucleusSphereRadius = 1.75,                                                             // This can change depending on how large we want the atom.
+          efficiency          = 0.33,                                                             // Efficiency rating of FCC packing is 0.76 so half that should be efficient enough.
+          nucleusSphereVolume = (4 / 3) * Math.PI * Math.pow(nucleusSphereRadius, 3),             // Figure our the radius of the outer sphere.
+          usableVolume        = efficiency * nucleusSphereVolume,                                 // How much of the container sphere's volume will be used.
+          particleVolume      = usableVolume / numParticles,                                      // What is the volume of a particle.
+          particleRadius      = Math.cbrt((3 / (4 * Math.PI)) * particleVolume),                  // Radius of a particle.
+          spacing             = 1.8 * particleRadius;                                             // Distance between each particle.
+    let   particlesPlaced     = 0;                                                                // How many have been placed inside the nucleus.
 
-/**
- * Will take the element object that was in the periodic-table library and break apart and figure out the
- * number of protons, neutrons, and electrons.
- * Number of protons = atomicNumber. 
- * Number of electrons = atomicNumber (were assuming element is neutral). 
- * Number of neutrons = mass - protons. 
- * @param { Object } element - Element you are trying to get the protons, nuetrons, and electrons from. 
- * @returns { Object } Contains values protons, neutrons, electrons with their coresponding number.
- */
-function numberOfProtonsNeutronsElectrons( element ) {
-    const mass = parseFloat(element.atomicMass.split('(')[0]),
-          numProtons = element.atomicNumber,
-          numElectrons = element.atomicNumber,
-          numNeutrons = Math.round( mass - numProtons );
-    const numParts = {
-        protons: numProtons,
-        neutrons: numNeutrons,
-        electrons: numElectrons
-    };
-    return numParts;
-}
+    console.log(particleRadius, particleRadius * numParticles, usableVolume);
 
-/**
- * Will make a three group containing the entire atom that will be displayed for the user.
- * @param { Integer } protons - Number of protons in the nucleus.
- * @param { Integer } neutrons - Number of neutrons in the nucleus.
- * @param { Integer } electrons - Number of electrons orbiting the nucleus.
- * @returns { THREE.Group } A group containing all of the particles in the neuclus and orbiting electrons.
- */
-function createAtom( protons, neutrons, electrons ) {
-    const atomGroup = new THREE.Group(), 
-          nucleusGroup = createNucleus( protons, neutrons ),
-          electronGorup = createElectrons( electrons );
-    atomGroup.add(nucleusGroup);
-    atomGroup.add(electronGorup);
-    return atomGroup;
-}
+    let allPlaced = false;
 
-/**
- * Will create the nucleus of the atom. Will make red spheres for each proton and 
- * blue spheres for each neutron.
- * @param { Integer } protons - The number of protons in the nucleus
- * @param { Integer } neutrons - The number of neutrons in the nucleus
- * @returns { THREE.Group } A group containing the particles in the nucleus.
- */
-function createNucleus( protons, neutrons ) {
-    const nucleusGroup = new THREE.Group(),                                                // Group holding the nucleus.
-          numParticles = protons + neutrons,                                               // Number of spheres we need to make.
-          nucleusSphereRadius = 10,                                                        // This can change depending on how large we want the atom.
-          efficiency = 0.74,                                                               // Efficiency rating of FCC packing.
-          nucleusSphereVolume = (4 / 3) * Math.PI * Math.pow(nucleusSphereRadius, 3),      // Figure our the radius of the outer sphere.
-          usableVolume = efficiency * nucleusSphereVolume,                                 // How much of the container sphere's volume will be used.
-          particleVolume = usableVolume / numParticles,                                    // What is the volume of a particle.
-          particleRadius = Math.cbrt((3 / (4 * Math.PI)) * particleVolume);                // Radius of a particle.
-    
-    // Generate random positions within the large sphere
-    for (let i = 0; i < numParticles; i++) {
-        let position;
-        let isValid = false;
-        while (!isValid) {
-            // Get a random position in the sphere.
-            const x = (Math.random() * 2 - 1) * nucleusSphereRadius,
-                  y = (Math.random() * 2 - 1) * nucleusSphereRadius,
-                  z = (Math.random() * 2 - 1) * nucleusSphereRadius;
-            position = new THREE.Vector3(x, y, z);
+    // Create and shuffle the color array
+    const colors = Array(neutrons).fill(LIGHT_BLUE)
+        .concat(Array(protons).fill(GREEN))
+        .sort(() => Math.random() - 0.5); // Randomize the order of colors
 
-            // Does the particle fit into the nucleus sphere and does it overlap with any other particle.
-            if (position.length() + particleRadius > nucleusSphereRadius) {
-                isValid = true;
+    // Iterate through 3D grid
+    for (let x = -nucleusSphereRadius; x <= nucleusSphereRadius && !allPlaced; x += spacing) {
+        for (let y = -nucleusSphereRadius; y <= nucleusSphereRadius && !allPlaced; y += spacing) {
+            for (let z = -nucleusSphereRadius; z <= nucleusSphereRadius && !allPlaced; z += spacing) {
+                const position = new THREE.Vector3(x, y, z);
+
+                // Check if position is inside the nucleus sphere
+                if (position.length() + particleRadius <= nucleusSphereRadius) {
+                    const color = colors[particlesPlaced],
+                          particleGeometry = new THREE.SphereGeometry(particleRadius, 16, 16),
+                          particleMaterial = new THREE.MeshBasicMaterial({ color: color }),
+                          particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                    particle.position.copy(position);
+                    nucleusGroup.add(particle);
+
+                    particlesPlaced++;
+                    if (particlesPlaced >= numParticles) {
+                        allPlaced = true;
+                        break;
+                    }
+                }
             }
         }
-
-        // Make a particle to place into the group
-        const GREEN = 0x008000,
-              LIGHT_BLUE = 0XADD8E6,
-              particleGeometry = new THREE.SphereGeometry(particleRadius, 16, 16);
-        let color = i < neutrons ? LIGHT_BLUE : GREEN;
-        const particleMaterial = new THREE.MeshBasicMaterial({ color: color }),
-              particle = new THREE.Mesh(particleGeometry, particleMaterial);
-        particle.position.copy(position);
-        nucleusGroup.add(particle);
     }
 
-    // Add the clear sphere to the group.
+    console.log(particlesPlaced);
+
+    // Add the transparent boundary sphere
     const nucleusGeometry = new THREE.SphereGeometry(nucleusSphereRadius, 32, 32),
-          nucleusMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: true }), // Set the wireframe to true to see the boarder of the nucleus.
-          nucleus = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
-    nucleusGroup.add(nucleus);          
+        nucleusMaterial = new THREE.MeshBasicMaterial({
+            color: 0x000000,
+            wireframe: false,
+            opacity: 0.1,
+            transparent: true,
+        }),
+        nucleus = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
+    nucleusGroup.add(nucleus);
 
     console.log(`There will be ${protons} green spheres in the nucleus and ${neutrons} light blue spheres.`);
 
@@ -119,24 +76,148 @@ function createNucleus( protons, neutrons ) {
 }
 
 /**
- * Will create the electrons that will orbit around the nucleus of the atom.
- * @param { Integer } electrons - Number of electrons oribiting.
- * @returns { THREE.Group } A group containing the orbiting electrons.
+ * Creates orbiting electrons for an atom, each in a unique 3D plane.
+ * @param {Integer} electrons - Number of electrons orbiting the nucleus
+ * @returns {THREE.Group} A group containing the electrons
  */
-function createElectrons( electrons ) {
-    const electronGorup = new THREE.Group(),
-          YELLOW = 0xFFFF00,
-          radius = 0.25;
+function createOrbitingElectrons(electrons) {
+    const electronGroup = new THREE.Group();
 
-    for(let i = 0; i < electrons; i++) {
-        const elecGeometry = new THREE.SphereGeometry(radius, 6, 6),
-              elecMaterial = new THREE.MeshBasicMaterial({ color: YELLOW }),
-              electron = new THREE.Mesh(elecGeometry, elecMaterial);
-        electronGorup.add(electron);
+    function createElectron() {
+        const geometry = new THREE.SphereGeometry(0.1, 16, 16);
+        const material = new THREE.MeshStandardMaterial({ color: RED });
+        return new THREE.Mesh(geometry, material);
     }
 
-    console.log(`There are ${electrons} yellow electrons orbiting the nucleus.`);
-    return electronGorup;
+    const shells = [2, 8, 18, 32];
+    const shellDistances = [2, 3, 5, 7];
+
+    let electronIndex = 0;
+
+    for (let shellIndex = 0; shellIndex < shells.length; shellIndex++) {
+        const maxElectronsInShell = shells[shellIndex];
+        const shellDistance = shellDistances[shellIndex];
+
+        for (let i = 0; i < maxElectronsInShell && electronIndex < electrons; i++) {
+            const angle = (i / maxElectronsInShell) * Math.PI * 2; // Evenly distribute electrons
+
+            const electron = createElectron();
+
+            // Randomly orient the plane of orbit
+            const tiltAxis = new THREE.Vector3(
+                Math.random() - 0.5,
+                Math.random() - 0.5,
+                Math.random() - 0.5
+            ).normalize(); // Random tilt axis
+            const tiltAngle = Math.random() * Math.PI; // Random tilt angle
+
+            // Store the electron's orbital data for animation
+            electron.userData = {
+                angle, // Initial angle
+                shellDistance, // Orbital distance
+                tiltAxis, // Axis of tilt
+                tiltAngle // Angle of tilt
+            };
+
+            // Position the electron initially (in 3D tilted orbit)
+            const x = Math.cos(angle) * shellDistance;
+            const y = Math.sin(angle) * shellDistance;
+            const z = 0;
+
+            // Apply the tilt
+            const tiltedPosition = new THREE.Vector3(x, y, z).applyAxisAngle(
+                tiltAxis,
+                tiltAngle
+            );
+            electron.position.copy(tiltedPosition);
+
+            electronGroup.add(electron);
+            electronIndex++;
+        }
+
+        if (electronIndex >= electrons) break;
+    }
+
+    return electronGroup;
 }
 
-selectElement( 90 );
+/**
+ * Combines nucleus and orbiting electrons to create a full atom.
+ * @param {Integer} protons - Number of protons in the nucleus
+ * @param {Integer} neutrons - Number of neutrons in the nucleus
+ * @param {Integer} electrons - Number of electrons orbiting the nucleus
+ * @returns {THREE.Group} A group containing the full atom
+ */
+function createAtom(protons, neutrons, electrons) {
+    const atomGroup = new THREE.Group();
+
+    const nucleus = createNucleus(protons, neutrons);
+    atomGroup.add(nucleus);
+
+    const orbitingElectrons = createOrbitingElectrons(electrons);
+    atomGroup.add(orbitingElectrons);
+
+    return atomGroup;
+}
+
+// Initialize the scene
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0e0e0e);
+
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 15;
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Add lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(10, 10, 10);
+scene.add(directionalLight);
+
+// Create the atom and add it to the scene
+const protons = 8; // Oxygen
+const neutrons = 8;
+const electrons = 8;
+
+const atom = createAtom(protons, neutrons, electrons);
+scene.add(atom);
+
+// Animation loop
+function animate() {
+    requestAnimationFrame(animate);
+
+    // Animate electrons
+    const orbitingElectrons = atom.children[1];
+    orbitingElectrons.children.forEach(electron => {
+        // Update the angle for animation
+        const { angle, shellDistance, tiltAxis, tiltAngle } = electron.userData;
+        electron.userData.angle += 0.05; // Adjust speed for orbiting
+
+        // Calculate new position
+        const x = Math.cos(electron.userData.angle) * shellDistance;
+        const y = Math.sin(electron.userData.angle) * shellDistance;
+        const z = 0;
+
+        // Apply the tilt to create a 3D orbit
+        const tiltedPosition = new THREE.Vector3(x, y, z).applyAxisAngle(
+            tiltAxis,
+            tiltAngle
+        );
+
+        // Update the electron's position
+        electron.position.copy(tiltedPosition);
+    });
+
+    //animate the nucleus to spin
+    const nucleus = atom.children[0];
+    nucleus.rotation.x += 0.025;
+    nucleus.rotation.y += 0.025;
+
+    renderer.render(scene, camera);
+}
+animate();
