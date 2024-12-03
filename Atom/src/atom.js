@@ -2,12 +2,12 @@
 import * as THREE from '../node_modules/three/build/three.module.js';
 // const PT = require('./src/data.json');
 
-const numbers = PT.reduce(function (obj, element) {
-    obj[element.atomicNumber] = element;
-    return obj;
-}, {});
+// const numbers = PT.reduce(function (obj, element) {
+//     obj[element.atomicNumber] = element;
+//     return obj;
+// }, {});
 
-console.log(numbers[8]);
+// console.log(numbers[8]);
 
 const GREEN = 0x008000,           // Hex code for the color green.
       LIGHT_BLUE = 0xADD8E6,      // Hex code for the color light blue.
