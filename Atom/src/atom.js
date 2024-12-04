@@ -61,7 +61,11 @@ function createPeriodicTable() {
  * @param {Object} element - Element holds all of the information about the amount on protons, neutrons, and electrons.
  */
 function selectElement(element) {
-    console.log(element);
+    const parts = getParticles(element);
+    console.log(parts);
+
+    const atom = createAtom(parts.protons, parts.neutrons, parts.electrons);
+    makeSceneWithAtom(atom);
 }
 
 /**
@@ -73,7 +77,8 @@ function selectElement(element) {
  * @returns Contains values protons, neutrons, electrons with their coresponding number.
  */
 function getParticles(element) {
-    const mass = parseFloat(element.atomicMass.split('(')[0]),
+    const massString = element.atomicMass;
+    const mass = parseFloat(massString.split('(')[0]),
           numProtons = parseInt(element.atomicNumber),
           numElectrons = parseInt(element.atomicNumber),
           numNeutrons = Math.round( mass - numProtons );
@@ -99,7 +104,7 @@ function createNucleus(protons, neutrons) {
     const nucleusGroup        = new THREE.Group(),                                                // Group holding the nucleus.
           numParticles        = protons + neutrons,                                               // Number of spheres we need to make.
           nucleusSphereRadius = 1.75,                                                             // This can change depending on how large we want the atom.
-          efficiency          = 0.33,                                                             // How efficent / good at placing are we going to be.
+          efficiency          = 0.25,                                                             // How efficent / good at placing are we going to be.
           nucleusSphereVolume = (4 / 3) * Math.PI * Math.pow(nucleusSphereRadius, 3),             // Figure our the radius of the outer sphere.
           usableVolume        = efficiency * nucleusSphereVolume,                                 // How much of the container sphere's volume will be used.
           particleVolume      = usableVolume / numParticles,                                      // What is the volume of a particle.
@@ -244,67 +249,74 @@ function createAtom(protons, neutrons, electrons) {
     return atomGroup;
 }
 
+function makeSceneWithAtom(atom) {
+    // Make a new scene and make the background color a dark grey.
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0e0e0e);
+
+    /**
+     * Camera - takes in 4 parameters (FOV, Aspect, Near, Far)
+     *      FOV     - Number from 1-180, typically 45-90 is used
+     *      Aspect  - Width / Height of the screen to ensure no warping
+     *      Near    - How close to the camera will things be rendered, use a larger number for distant scenes,
+     *                typically 0.1 will be used for most scenes.
+     *      Far     - How far from the camera will things be rendered, 1000 is most common can shorten if you know
+     *                your scene doesn't contain distant objects.
+     */
+    const camera = new THREE.PerspectiveCamera(75, (window.innerWidth / 4) / (window.innerHeight / 4), 0.1, 1000);
+    camera.position.z = 15;
+
+    // Make the renderer and append it to the DOM.
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    const renderDiv = document.getElementById(`atomRender`);
+    renderDiv.appendChild(renderer.domElement);
+
+    // Add lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight); 
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(10, 10, 10);
+    scene.add(directionalLight);
+
+    // Add the atom to the screen
+    scene.add(atom);
+
+    // Animation loop
+    function animate() {
+        requestAnimationFrame(animate);
+
+        //animate the nucleus to spin
+        const nucleus = atom.children[0];
+        nucleus.rotation.x += 0.025;
+        nucleus.rotation.y += 0.025;
+
+        // Animate electrons
+        const orbitingElectrons = atom.children[1];
+        orbitingElectrons.children.forEach(electron => {
+            // Update the angle for animation
+            const { angle, shellDistance, tiltAxis, tiltAngle } = electron.userData;
+            electron.userData.angle += 0.05; // Adjust speed for orbiting
+
+            // Calculate new position
+            const x = Math.cos(electron.userData.angle) * shellDistance;
+            const y = Math.sin(electron.userData.angle) * shellDistance;
+            const z = 0;
+
+            // Apply the tilt to create a 3D orbit
+            const tiltedPosition = new THREE.Vector3(x, y, z).applyAxisAngle(
+                tiltAxis,
+                tiltAngle
+            );
+
+            // Update the electron's position
+            electron.position.copy(tiltedPosition);
+        });
+
+        renderer.render(scene, camera);
+    }
+    animate();
+}
+
 createPeriodicTable();
-
-// Initialize the scene
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0e0e0e);
-
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 15;
-
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-const renderDiv = document.getElementById(`atomRender`);
-renderDiv.appendChild(renderer.domElement);
-
-// Add lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
-
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(10, 10, 10);
-scene.add(directionalLight);
-
-// Create the atom and add it to the scene
-const protons = 8;      // Oxygen
-const neutrons = 8;
-const electrons = 8;
-
-// const atom = createAtom(protons, neutrons, electrons);
-// scene.add(atom);
-
-// Animation loop
-// function animate() {
-//     requestAnimationFrame(animate);
-
-//     //animate the nucleus to spin
-//     const nucleus = atom.children[0];
-//     nucleus.rotation.x += 0.025;
-//     nucleus.rotation.y += 0.025;
-
-//     // Animate electrons
-//     const orbitingElectrons = atom.children[1];
-//     orbitingElectrons.children.forEach(electron => {
-//         // Update the angle for animation
-//         const { angle, shellDistance, tiltAxis, tiltAngle } = electron.userData;
-//         electron.userData.angle += 0.05; // Adjust speed for orbiting
-
-//         // Calculate new position
-//         const x = Math.cos(electron.userData.angle) * shellDistance;
-//         const y = Math.sin(electron.userData.angle) * shellDistance;
-//         const z = 0;
-
-//         // Apply the tilt to create a 3D orbit
-//         const tiltedPosition = new THREE.Vector3(x, y, z).applyAxisAngle(
-//             tiltAxis,
-//             tiltAngle
-//         );
-
-//         // Update the electron's position
-//         electron.position.copy(tiltedPosition);
-//     });
-
-//     renderer.render(scene, camera);
-// }
-// animate();
