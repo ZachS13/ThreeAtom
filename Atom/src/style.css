@@ -1,4 +1,28 @@
 body {
-    margin: 0;
+    margin: 0.5rem;
+    padding: 0.5rem;
     overflow: hidden;
+}
+
+table {
+    width: 75vw;
+    border: 1px solid;
+}
+
+i {
+    font-size: 0.75rem;
+}
+
+strong {
+    font-size: 1.25rem;
+}
+
+small {
+    font-size: 1rem;
+}
+
+.eleInfo {
+    height: 65px;
+    text-align: center;
+    border: 1px solid;
 }
