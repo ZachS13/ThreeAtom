@@ -263,12 +263,14 @@ function makeSceneWithAtom(atom) {
      *      Far     - How far from the camera will things be rendered, 1000 is most common can shorten if you know
      *                your scene doesn't contain distant objects.
      */
-    const camera = new THREE.PerspectiveCamera(75, (window.innerWidth / 4) / (window.innerHeight / 4), 0.1, 1000);
+    const halfWdith = window.innerWidth / 2,
+          halfHeight = window.innerHeight / 2,
+          camera = new THREE.PerspectiveCamera(75, (halfWdith / halfHeight), 0.1, 1000);
     camera.position.z = 15;
 
     // Make the renderer and append it to the DOM.
     const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(halfWdith, halfHeight);
     const renderDiv = document.getElementById(`atomRender`);
     renderDiv.appendChild(renderer.domElement);
 

@@ -1,24 +1,26 @@
 body {
-    margin: 0.5rem;
-    padding: 0.5rem;
+    margin: 0.25rem;
+    padding: 0.25rem;
     overflow: hidden;
+
+    display: flex;
 }
 
 table {
-    width: 75vw;
+    width: 50vw;
     border: 1px solid;
 }
 
 i {
-    font-size: 0.75rem;
+    font-size: 0.5rem;
 }
 
 strong {
-    font-size: 1.25rem;
+    font-size: 1rem;
 }
 
 small {
-    font-size: 1rem;
+    font-size: 0/75rem;
 }
 
 .eleInfo {
