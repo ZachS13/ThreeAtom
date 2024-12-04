@@ -78,8 +78,13 @@ function selectElement(element) {
  */
 function getParticles(element) {
     const massString = element.atomicMass;
-    const mass = parseFloat(massString.split('(')[0]),
-          numProtons = parseInt(element.atomicNumber),
+    let mass = 0;
+    if (typeof massString === 'string') {
+        mass = parseFloat(massString.split('(')[0]);
+    } else {
+        mass = parseFloat(massString);
+    }
+    const numProtons = parseInt(element.atomicNumber),
           numElectrons = parseInt(element.atomicNumber),
           numNeutrons = Math.round( mass - numProtons );
     const numParts = {
