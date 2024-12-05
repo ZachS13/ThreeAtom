@@ -1,9 +1,10 @@
 body {
-    margin: 0.25rem;
-    padding: 0.25rem;
+    margin: 0.5rem;
+    padding: 0.5rem;
     overflow: hidden;
-
     display: flex;
+    background-color: #0e0e0e;
+    color: #9a9a9a;
 }
 
 table {
@@ -28,4 +29,15 @@ small {
     text-align: center;
     border: 1px solid;
     cursor: pointer;
+}
+
+.eleInfo:hover {
+    color: white;
+}
+
+#atom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
 }

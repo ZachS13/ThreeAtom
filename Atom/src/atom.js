@@ -11,16 +11,14 @@ const ATOMIC_NUMBERS = periodicTable().reduce(function (obj, element) {
     return obj;
 }, {});
 
-console.log(ATOMIC_NUMBERS[57]);
-
 /**
  * This will make the periodic table to select what element to display.
  */
 function createPeriodicTable() {
-    const periodicTableDiv = document.getElementById(`periodicTable`);
-    const table = document.createElement(`table`);
+    const periodicTableDiv = document.getElementById(`periodicTable`),
+          table = document.createElement(`table`);
 
-    // The layout of the periodic table with each number representing the atomic number of the element. Was there an easier way probably.
+    // The layout of the periodic table with each number representing the atomic number of the element. Was there an easier way? Probably.
     const tableLayout = [
         [1 , "", "", "" , "" , "" , "" , "" , "" , "" , "" , "" , "" , "" , "" , "" , "" , 2  ], 
         [3 , 4 , "", "" , "" , "" , "" , "" , "" , "" , "" , "" , 5  , 6  , 7  , 8  , 9  , 10 ],      
@@ -66,6 +64,24 @@ function selectElement(element) {
 
     const atom = createAtom(parts.protons, parts.neutrons, parts.electrons);
     makeSceneWithAtom(atom);
+    displayElementInformation(element);
+}
+
+function displayElementInformation(element) {
+    const infoDiv = document.getElementById(`atomInfo`);
+    infoDiv.innerHTML = '';
+
+    console.log(element);
+
+    let title = document.createElement(`h2`);
+    title.innerHTML = `${element.symbol} - ${element.name}`;
+
+    let description = document.createElement(`p`);
+    description.innerHTML = `Standard State: ${element.standardState}<br>Bonding Type: ${element.bondingType}
+                        <br>Atomic Mass: ${element.atomicMass}`;
+
+    infoDiv.appendChild(title);
+    infoDiv.appendChild(description);   
 }
 
 /**
@@ -106,65 +122,81 @@ const GREEN = 0x008000,           // Hex code for the color green.
  * @returns {THREE.Group} A group containing the nucleus particles
  */
 function createNucleus(protons, neutrons) {
-    const nucleusGroup        = new THREE.Group(),                                                // Group holding the nucleus.
-          numParticles        = protons + neutrons,                                               // Number of spheres we need to make.
-          nucleusSphereRadius = 1.75,                                                             // This can change depending on how large we want the atom.
-          efficiency          = 0.25,                                                             // How efficent / good at placing are we going to be.
-          nucleusSphereVolume = (4 / 3) * Math.PI * Math.pow(nucleusSphereRadius, 3),             // Figure our the radius of the outer sphere.
-          usableVolume        = efficiency * nucleusSphereVolume,                                 // How much of the container sphere's volume will be used.
-          particleVolume      = usableVolume / numParticles,                                      // What is the volume of a particle.
-          particleRadius      = Math.cbrt((3 / (4 * Math.PI)) * particleVolume),                  // Radius of a particle.
-          spacing             = 1.8 * particleRadius;                                             // Distance between each particle.
-    let   particlesPlaced     = 0;                                                                // How many have been placed inside the nucleus.
+    const nucleusGroup = new THREE.Group(),
+          numParticles = protons + neutrons,                                            // Total number of particles.
+          nucleusSphereRadius = 3,                                                      // Fixed nucleus size.
+          packingEfficiency = 0.5,                                                      // Efficiency of HCP
+          nucleusVolume = (4 / 3) * Math.PI * Math.pow(nucleusSphereRadius, 3),         // Volume of the nucleus
+          usableVolume = nucleusVolume * packingEfficiency,                             // How much of the Volume will be useable.
 
-    console.log(particleRadius, particleRadius * numParticles, usableVolume);
+          particleVolume = usableVolume / Math.max(1, numParticles),                    // How large are the particles
+          particleRadius = Math.cbrt((3 / (4 * Math.PI)) * particleVolume),             // Particle radius
 
-    let allPlaced = false;
+          spacing = numParticles <= 13 ? particleRadius * 0.9 : particleRadius * 1.2;  // Spacing between each particle (allowed colliding for better packing)
 
-    // Create an array of colors needed and shuffle them.
+    // Instead of placing one group of colors then the next we are going to place them
+    // in one array and shuffle.
     const colors = Array(neutrons).fill(LIGHT_BLUE)
         .concat(Array(protons).fill(GREEN))
         .sort(() => Math.random() - 0.5);
 
-    // Iterate through 3D grid
-    for (let x = -nucleusSphereRadius; x <= nucleusSphereRadius && !allPlaced; x += spacing) {
-        for (let y = -nucleusSphereRadius; y <= nucleusSphereRadius && !allPlaced; y += spacing) {
-            for (let z = -nucleusSphereRadius; z <= nucleusSphereRadius && !allPlaced; z += spacing) {
-                const position = new THREE.Vector3(x, y, z);
+    let particlesPlaced = 0;
 
-                // Check if position is inside the nucleus sphere
-                if (position.length() + particleRadius <= nucleusSphereRadius) {
-                    const color = colors[particlesPlaced],
-                          particleGeometry = new THREE.SphereGeometry(particleRadius, 16, 16),
-                          particleMaterial = new THREE.MeshBasicMaterial({ color: color }),
-                          particle = new THREE.Mesh(particleGeometry, particleMaterial);
-                    particle.position.copy(position);
-                    nucleusGroup.add(particle);
+    // Adjust bounds dynamically for low particle counts.
+    const boundsFactor = numParticles <= 13 ? 1.75 : 1.2;
 
-                    particlesPlaced++;
-                    if (particlesPlaced >= numParticles) {
-                        allPlaced = true;
-                        break;
+    // Particle was not being placed for hydrgen (1 particle in the nucleus)
+    if(numParticles === 1) {
+        let oneParticleRadius = nucleusSphereRadius;
+        const color = GREEN,
+            particleGeometry = new THREE.SphereGeometry(oneParticleRadius, 16, 16),
+              particleMaterial =  new THREE.MeshBasicMaterial({ color: color }),
+              particle = new THREE.Mesh(particleGeometry, particleMaterial);
+        nucleusGroup.add(particle);
+        particlesPlaced++;
+    } else {
+        // HCP Placement Logic.
+        for (let z = -nucleusSphereRadius * boundsFactor; z <= nucleusSphereRadius * boundsFactor; z += spacing * Math.sqrt(2 / 3)) {
+            const isOddLayer = Math.round(z / (spacing * Math.sqrt(2 / 3))) % 2 === 0;
+
+            for (let y = -nucleusSphereRadius * boundsFactor; y <= nucleusSphereRadius * boundsFactor; y += spacing) {
+                const rowOffset = isOddLayer ? spacing / 2 : 0;
+
+                for (let x = -nucleusSphereRadius * boundsFactor; x <= nucleusSphereRadius * boundsFactor; x += spacing * Math.sqrt(3)) {
+                    const position = new THREE.Vector3(x + rowOffset, y, z);
+
+                    // Check if the particle fits inside the nucleus sphere.
+                    if (position.length() + particleRadius <= nucleusSphereRadius) {
+                        const color = colors[particlesPlaced],
+                              particleGeometry = new THREE.SphereGeometry(particleRadius, 16, 16),
+                              particleMaterial = new THREE.MeshBasicMaterial({ color: color }),
+                              particle = new THREE.Mesh(particleGeometry, particleMaterial);
+
+                        particle.position.copy(position);
+                        nucleusGroup.add(particle);
+
+                        particlesPlaced++;
+                        if (particlesPlaced >= numParticles) { break };
                     }
                 }
+                if (particlesPlaced >= numParticles) { break };
             }
+            if (particlesPlaced >= numParticles) { break };
         }
     }
 
-    console.log(particlesPlaced);
+    // Add a transparent boundary sphere for visualization.
+    const nucleusBoundaryGeometry = new THREE.SphereGeometry(nucleusSphereRadius, 32, 32),
+          nucleusBoundaryMaterial = new THREE.MeshBasicMaterial({
+                color: 0x000000,        // If viewing the wire frame change this to white
+                wireframe: false,       // Change this to true to view the nucleus ball
+                opacity: 0.1,
+                transparent: true,
+    });
+    const nucleusBoundary = new THREE.Mesh(nucleusBoundaryGeometry, nucleusBoundaryMaterial);
+    nucleusGroup.add(nucleusBoundary);
 
-    // Add the transparent boundary sphere
-    const nucleusGeometry = new THREE.SphereGeometry(nucleusSphereRadius, 16, 16),
-        nucleusMaterial = new THREE.MeshBasicMaterial({
-            color: 0x000000,            // Change to white to see the frame more clearly (0xFFFFFF).
-            wireframe: true,            // True to see the frame around the nucleus.
-            opacity: 0.1,
-            transparent: true,
-        }),
-        nucleus = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
-    nucleusGroup.add(nucleus);
-
-    console.log(`There will be ${protons} green spheres in the nucleus and ${neutrons} light blue spheres.`);
+    console.log(`Nucleus created with ${particlesPlaced} particles out of ${numParticles}`);
 
     return nucleusGroup;
 }
@@ -177,14 +209,8 @@ function createNucleus(protons, neutrons) {
 function createOrbitingElectrons(electrons) {
     const electronGroup = new THREE.Group();
 
-    function createElectron() {
-        const geometry = new THREE.SphereGeometry(0.1, 16, 16);
-        const material = new THREE.MeshStandardMaterial({ color: RED });
-        return new THREE.Mesh(geometry, material);
-    }
-
     const shells = [2, 8, 18, 32];          // How many electrons go in each shell
-    const shellDistances = [2, 3, 5, 7];    // Distance from the center / nucleus
+    const shellDistances = [3, 5, 7, 9];    // Distance from the center / nucleus
 
     let electronIndex = 0;
 
@@ -236,6 +262,17 @@ function createOrbitingElectrons(electrons) {
 }
 
 /**
+ * Creates electron ball
+ * @returns {THREE.Mesh} ThreeJS ball that is returned
+ */
+function createElectron() {
+    const geometry = new THREE.SphereGeometry(0.1, 16, 16);
+    const material = new THREE.MeshStandardMaterial({ color: RED });
+    const electron = new THREE.Mesh(geometry, material);
+    return electron;
+}
+
+/**
  * Combines nucleus and orbiting electrons to create a full atom.
  * @param {Integer} protons - Number of protons in the nucleus
  * @param {Integer} neutrons - Number of neutrons in the nucleus
@@ -277,13 +314,14 @@ function makeSceneWithAtom(atom) {
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(halfWdith, halfHeight);
     const renderDiv = document.getElementById(`atomRender`);
+    renderDiv.innerHTML = '';
     renderDiv.appendChild(renderer.domElement);
 
     // Add lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight); 
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 3 );
     directionalLight.position.set(10, 10, 10);
     scene.add(directionalLight);
 
@@ -307,9 +345,9 @@ function makeSceneWithAtom(atom) {
             electron.userData.angle += 0.05; // Adjust speed for orbiting
 
             // Calculate new position
-            const x = Math.cos(electron.userData.angle) * shellDistance;
-            const y = Math.sin(electron.userData.angle) * shellDistance;
-            const z = 0;
+            const x = Math.cos(electron.userData.angle) * shellDistance,
+                  y = Math.sin(electron.userData.angle) * shellDistance,
+                  z = 0;
 
             // Apply the tilt to create a 3D orbit
             const tiltedPosition = new THREE.Vector3(x, y, z).applyAxisAngle(
