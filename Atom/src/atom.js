@@ -149,8 +149,8 @@ function createNucleus(protons, neutrons) {
     if(numParticles === 1) {
         let oneParticleRadius = nucleusSphereRadius;
         const color = GREEN,
-            particleGeometry = new THREE.SphereGeometry(oneParticleRadius, 16, 16),
-              particleMaterial =  new THREE.MeshBasicMaterial({ color: color }),
+              particleGeometry = new THREE.SphereGeometry(oneParticleRadius, 16, 16),
+              particleMaterial =  new THREE.MeshStandardMaterial({ color: color }),
               particle = new THREE.Mesh(particleGeometry, particleMaterial);
         nucleusGroup.add(particle);
         particlesPlaced++;
@@ -169,7 +169,7 @@ function createNucleus(protons, neutrons) {
                     if (position.length() + particleRadius <= nucleusSphereRadius) {
                         const color = colors[particlesPlaced],
                               particleGeometry = new THREE.SphereGeometry(particleRadius, 16, 16),
-                              particleMaterial = new THREE.MeshBasicMaterial({ color: color }),
+                              particleMaterial = new THREE.MeshStandardMaterial({ color: color }),
                               particle = new THREE.Mesh(particleGeometry, particleMaterial);
 
                         particle.position.copy(position);
