@@ -305,8 +305,8 @@ function makeSceneWithAtom(atom) {
      *      Far     - How far from the camera will things be rendered, 1000 is most common can shorten if you know
      *                your scene doesn't contain distant objects.
      */
-    const halfWdith = window.innerWidth / 3,
-          halfHeight = window.innerHeight / 3,
+    const halfWdith = window.innerWidth / 2,
+          halfHeight = window.innerHeight / 2,
           camera = new THREE.PerspectiveCamera(75, (halfWdith / halfHeight), 0.1, 1000);
     camera.position.z = 15;
 

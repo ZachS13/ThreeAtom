@@ -44,11 +44,6 @@ small {
     order: 1;
 }
 
-#atomRenderer{
-    height: 50vh;
-    width: 40vw;
-}
-
 #periodicTable {
     order: -1;
 }
