@@ -41,3 +41,36 @@ small {
     align-items: center;
     gap: 15px;
 }
+
+@media screen and (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    table {
+        width: 100%;
+        font-size: 12px;
+    }
+
+    .eleInfo {
+        height: 40px;
+    }
+
+    #atomRender {
+        height: 250px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    body {
+        font-size: 12px;
+    }
+
+    .eleInfo {
+        height: 35px;
+    }
+
+    #atomRender {
+        height: 200px;
+    }
+}
