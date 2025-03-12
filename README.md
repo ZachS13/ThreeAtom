@@ -18,4 +18,4 @@
   - Animate object how you want and place into render loop
 
 ## View the page
-Github Pages [Atom](https://zachs13.github.io/ThreeAtom/Atom/).
+Github Pages [Atom](https://zachs13.github.io/ThreeAtom/).
