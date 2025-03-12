@@ -45,10 +45,20 @@ small {
 @media screen and (max-width: 768px) {
     body {
         font-size: 14px;
+        flex-direction: column;
+    }
+
+    #periodicTable {
+        order: -1;
+        /* Ensures periodic table appears first */
+    }
+
+    #atom {
+        order: 1;
+        /* Renders the atom display below */
     }
 
     table {
-        width: 100%;
         font-size: 12px;
     }
 
@@ -64,6 +74,16 @@ small {
 @media screen and (max-width: 480px) {
     body {
         font-size: 12px;
+    }
+
+    #periodicTable {
+        order: -1;
+        /* Ensures periodic table is at the top */
+    }
+
+    #atom {
+        order: 1;
+        /* Renders the atom display below */
     }
 
     .eleInfo {
