@@ -52,22 +52,3 @@ small {
 #periodicTable {
     order: -1;
 }
-
-
-@media screen and (max-width: 768px) {
-    body {
-        margin: 0.5rem;
-        padding: 0.5rem;
-        display: flex;
-        flex-direction: row;
-    }
-    
-    table {
-        width: 100vw;
-        border: 1px solid;
-    }
-}
-
-@media screen and (max-width: 480px) {
-
-}
