@@ -41,7 +41,14 @@ small {
     align-items: center;
     gap: 15px;
     width: 40vw;
+    order: 1;
 }
+
+#periodicTable {
+    order: -1;
+    /* Ensures periodic table is at the top */
+}
+
 
 @media screen and (max-width: 768px) {
     body {
