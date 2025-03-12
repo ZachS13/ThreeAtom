@@ -41,12 +41,11 @@ small {
     align-items: center;
     gap: 15px;
     width: 40vw;
-    order: 1;
+    order: -1;
 }
 
 #periodicTable {
-    order: -1;
-    /* Ensures periodic table is at the top */
+    order: 1;
 }
 
 
