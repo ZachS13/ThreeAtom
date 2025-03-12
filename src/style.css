@@ -41,7 +41,7 @@ small {
     align-items: center;
     gap: 15px;
     width: 40vw;
-    order: -1;
+    order: 1;
 }
 
 #atomRenderer{
@@ -50,7 +50,7 @@ small {
 }
 
 #periodicTable {
-    order: 1;
+    order: -1;
 }
 
 
