@@ -1,14 +1,14 @@
 body {
     margin: 0.5rem;
     padding: 0.5rem;
-    /* overflow: hidden; */
+    overflow: hidden;
     display: flex;
     background-color: #0e0e0e;
     color: #9a9a9a;
 }
 
 table {
-    width: 40vw;
+    width: 50vw;
     border: 1px solid;
 }
 
@@ -21,7 +21,7 @@ strong {
 }
 
 small {
-    font-size: 0.75rem;
+    font-size: 0/75rem;
 }
 
 .eleInfo {
@@ -40,15 +40,4 @@ small {
     flex-direction: column;
     align-items: center;
     gap: 15px;
-    width: 40vw;
-    order: 1;
-}
-
-#atomRenderer {
-    height: 50vh;
-    width: 40vw;
-}
-
-#periodicTable {
-    order: -1;
 }
