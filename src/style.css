@@ -21,7 +21,7 @@ strong {
 }
 
 small {
-    font-size: 0/75rem;
+    font-size: 0.75rem;
 }
 
 .eleInfo {
@@ -44,53 +44,18 @@ small {
 
 @media screen and (max-width: 768px) {
     body {
-        font-size: 14px;
-        flex-direction: column;
+        margin: 0.5rem;
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: row;
     }
-
-    #periodicTable {
-        order: -1;
-        /* Ensures periodic table appears first */
-    }
-
-    #atom {
-        order: 1;
-        /* Renders the atom display below */
-    }
-
+    
     table {
-        font-size: 12px;
-    }
-
-    .eleInfo {
-        height: 40px;
-    }
-
-    #atomRender {
-        height: 250px;
+        width: 100vw;
+        border: 1px solid;
     }
 }
 
 @media screen and (max-width: 480px) {
-    body {
-        font-size: 12px;
-    }
 
-    #periodicTable {
-        order: -1;
-        /* Ensures periodic table is at the top */
-    }
-
-    #atom {
-        order: 1;
-        /* Renders the atom display below */
-    }
-
-    .eleInfo {
-        height: 35px;
-    }
-
-    #atomRender {
-        height: 200px;
-    }
 }
