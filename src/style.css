@@ -45,6 +45,7 @@ small {
 }
 
 #atomRenderer {
+    height: 50vh;
     width: 40vw;
 }
 
