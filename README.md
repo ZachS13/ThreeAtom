@@ -1,21 +1,37 @@
 # ThreeAtom
-## What is ThreeJS
-  ThreeJS is a JavaScript library / API that uses WebGL to make 3d, animated  renderings. This gives developers
-  the opourtunity to create 3d renderings in the browser, while simplifiying the complexities of WebGL making
-  it more accessible for developers.
 
-## Use Cases For TheeJS
-  Some use cases for ThreeJS can be anywhere from being able to display some type of a model, maybe a rendering of a
-  map on a game, to even using ThreeJS as a prototype to a gaeme engine.
+A simple starter project using **Three.js** to create interactive 3D graphics in the browser.
 
-## How To Start A Three Project
-  - Create basic files (index.html, main.js), These are included
-  - npm install three
-  - In the JavaScript file add the import :  import * as three from `three`;
-  - Set Up Camera, Scene, and Renderer
-  - Add Renderer to the DOM
-  - Create your 3D object
-  - Animate object how you want and place into render loop
+## What is Three.js?
 
-## View the page
-Github Pages [Atom](https://zachs13.github.io/ThreeAtom/).
+[Three.js](https://threejs.org/) is a JavaScript library built on top of WebGL that simplifies the process of creating 3D animations and visualizations in the browser. It abstracts the complex parts of WebGL, making it easier and more accessible for developers.
+
+## Use Cases for Three.js
+
+Three.js is incredibly versatile. You can use it to:
+
+- Render interactive 3D models in the browser
+- Build animated environments or maps for games
+- Prototype 3D game engines
+- Visualize data or scientific models in 3D
+
+## How to Start a Three.js Project
+
+1. Create the basic files (`index.html`, `main.js`) — already included in this repo
+2. Install Three.js:  
+   ```
+   npm install three
+   ```
+3. In your JavaScript file, import the library:  
+   ```js
+   import * as THREE from 'three';
+   ```
+4. Set up the **Camera**, **Scene**, and **Renderer**
+5. Add the renderer to the DOM
+6. Create your 3D objects
+7. Animate and render them inside a loop
+
+## View the Project
+
+You can view a live demo on GitHub Pages:  
+[ThreeAtom Demo](https://zachs13.github.io/ThreeAtom/)
